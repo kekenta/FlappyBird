@@ -261,9 +261,8 @@ class GameScene: SKScene ,SKPhysicsContactDelegate {
         // 衝突のカテゴリー設定
         bird.physicsBody?.categoryBitMask = birdCategory
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
-        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory
+        bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | ItemCategory
 
-        
         // アニメーションを設定
         bird.run(flap)
         // スプライトを追加する
@@ -272,7 +271,7 @@ class GameScene: SKScene ,SKPhysicsContactDelegate {
     
     func setupItem()
     {
-        // 鳥の画像サイズを取得
+      
         let birdSize = SKTexture(imageNamed: "bird_a").size()
         
         // 壁の画像を読み込む
@@ -305,8 +304,7 @@ class GameScene: SKScene ,SKPhysicsContactDelegate {
         // 壁を生成するアクションを作成
         let createItemAnimation = SKAction.run({
             // 壁関連のノードを乗せるノードを作成
-            let item = SKSpriteNode()
-            item.position = CGPoint(x: self.frame.size.width + ItemTexture.size().width / 2, y: 0)
+            let item = SKSpriteNode(texture: ItemTexture)
             item.zPosition = -70 // 雲より手前、地面より奥
 
             // 0〜random_y_rangeまでのランダム値を生成
@@ -315,20 +313,22 @@ class GameScene: SKScene ,SKPhysicsContactDelegate {
             let under_wall_y = under_item_lowest_y + random_y
             let ramdam_Item  = (ItemTexture.size().height + slit_length)/2
             let under_item_y = under_wall_y + ramdam_Item
+            
+            item.position = CGPoint(x: self.frame.size.width + ItemTexture.size().width / 2, y: under_item_y)
+            
             // 下側の壁を作成
-            let upper_i = SKSpriteNode(texture: ItemTexture)
-            upper_i.position = CGPoint(x: 0, y: under_item_y)
-            
-            item.addChild(upper_i)
+            //let upper_i = SKSpriteNode(texture: ItemTexture)
+            //item.position = CGPoint(x: 0, y: under_item_y)
+            //item.addChild(upper_i)
 
-            let itemscoreNode = SKSpriteNode()
-            itemscoreNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: upper_i.size.width, height: self.frame.size.height))
+            //let itemscoreNode = SKSpriteNode()
+            item.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: ItemTexture.size().width, height: ItemTexture.size().height))
             
-            itemscoreNode.physicsBody?.isDynamic = false
-            itemscoreNode.physicsBody?.categoryBitMask = self.ItemCategory
-            itemscoreNode.physicsBody?.contactTestBitMask = self.birdCategory
+            item.physicsBody?.isDynamic = false
+            item.physicsBody?.categoryBitMask = self.ItemCategory
+            item.physicsBody?.contactTestBitMask = self.birdCategory
             
-            item.addChild(itemscoreNode)
+           // item.addChild(itemscoreNode)
 
             item.run(itemAnimation)
 
@@ -398,8 +398,16 @@ class GameScene: SKScene ,SKPhysicsContactDelegate {
                     //mySoundAction
                     self.run(mySoundAction)
                    // ItemNode.removeFromParent()
-                
-        
+            
+                if(contact.bodyA.categoryBitMask & ItemCategory) == ItemCategory
+                {
+                    contact.bodyA.node?.removeFromParent()
+                }
+                    
+                else if(contact.bodyB.categoryBitMask & ItemCategory) == ItemCategory
+                {
+                    contact.bodyB.node?.removeFromParent()
+                }
                     
            }
            
